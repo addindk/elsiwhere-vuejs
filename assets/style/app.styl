@@ -1,0 +1,49 @@
+// Specify overrides (theme and/or base variables etc.)
+// See https://vuetifyjs.com/quick-start
+/*
+$theme := {
+  primary: #9c27b0
+  accent: #ce93d8
+  secondary: #424242
+  info: #0D47A1
+  warning: #ffb300
+  error: #B71C1C
+  success: #2E7D32
+}
+*/
+// Import Vuetify styling
+@require '~vuetify/src/stylus/main.styl'
+
+.page
+  @extend .fade-transition
+
+.layer-switcher
+  transform:rotate(0deg)
+  height: 100px
+  width: 100px
+  border-color: white
+  border-style: solid
+  border-radius: 50%
+  overflow: hidden
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4)
+  cursor: pointer
+  margin-left: 10px
+  margin-bottom: 10px
+  clear: both
+  pointer-events: auto
+  + .mapboxgl-ctrl
+    display: none !important
+
+.mapboxgl-ctrl-logo
+  display: none !important
+
+.mapboxgl-popup
+  max-width: 200px
+  font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif
+
+.marker 
+  display: block
+  padding: 0
+  background-image: url('~/assets/img/crosshair.png')
+  width: 100px
+  height: 100px

@@ -1,0 +1,47 @@
+{
+  "name": "elsiwhere",
+  "version": "1.0.0",
+  "description": "Find oplevelser i Helsingør Kommune",
+  "author": "Rune Tvilum <rune@addin.dk>",
+  "private": true,
+  "scripts": {
+    "dev": "backpack dev",
+    "build": "nuxt build && backpack build",
+    "start": "cross-env NODE_ENV=production node build/main.js",
+    "precommit": "npm run lint",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@nuxtjs/pwa": "^0.2.1",
+    "axios": "^0.16.2",
+    "busboy": "^0.2.14",
+    "cross-env": "^5.0.1",
+    "es6-promise": "^4.1.1",
+    "express": "^4.15.3",
+    "file-dialog": "^0.0.5",
+    "firebase": "^4.2.0",
+    "firebase-admin": "^5.2.0",
+    "firebaseui": "^2.3.0",
+    "mapbox-gl": "^0.39.1",
+    "mkdirp": "^0.5.1",
+    "nuxt": "^1.0.0-rc4",
+    "sharp": "^0.18.2",
+    "source-map-support": "^0.4.15",
+    "twitter": "^1.7.1",
+    "vuetify": "^0.14.11"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "backpack-core": "^0.4.1",
+    "eslint": "^4.3.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-loader": "^1.9.0",
+    "eslint-plugin-html": "^3.1.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1"
+  }
+}
