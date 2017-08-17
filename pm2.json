@@ -1,0 +1,9 @@
+{
+    "apps": [
+        {
+            "name": "elsiwhere",
+            "script": "npm",
+            "args" : "start"
+        }
+    ]
+}
