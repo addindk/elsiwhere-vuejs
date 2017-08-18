@@ -112,13 +112,9 @@ router.post('/post', function (req, res, next) {
     }).then(() => {
       doc.ts = Date.now()
       return firebase.database().ref('post').child(key).set(doc)
-    })
-    /*
-    .then(function () {
+    }).then(function () {
       return tweet('https://elsiwhere.dk/elsiwhere/post/' + key)
-    })
-    */
-    .then(() => {
+    }).then(() => {
       res.status(200).end()
     }).catch((err) => {
       res.status(500).json(err)
