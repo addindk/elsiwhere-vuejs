@@ -41,7 +41,7 @@ const uiConfig = {
       return false
     }
   },
-  signInFlow: 'redirect' // popup'
+  signInFlow: 'popup' // 'redirect' // popup'
 }
 let date = new Date()
 console.log('firebase initialized from server', date)
