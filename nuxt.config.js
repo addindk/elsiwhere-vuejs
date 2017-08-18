@@ -8,7 +8,8 @@ module.exports = {
       { rel: 'stylesheet', type: 'text/css', href: 'https://fonts.googleapis.com/css?family=Pacifico:400' }
     ],
     meta: [
-      { name: 'apple-mobile-web-app-capable', content:'yes' }      
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui' }
     ]
   },
   /*
@@ -25,9 +26,10 @@ module.exports = {
     // Simple usage
     // '@nuxtjs/pwa',
     // With options
-    ['@nuxtjs/pwa', { 
-      optimize: false, 
+    ['@nuxtjs/pwa', {
+      optimize: false,
       meta: {
+        viewport: false,
         ogTitle: false,
         ogDescription: false
       }
