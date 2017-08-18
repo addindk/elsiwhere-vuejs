@@ -23,9 +23,15 @@ module.exports = {
   */
   modules: [
     // Simple usage
-    '@nuxtjs/pwa',
+    // '@nuxtjs/pwa',
     // With options
-    ['@nuxtjs/pwa', { optimize: false }]
+    ['@nuxtjs/pwa', { 
+      optimize: false, 
+      meta: {
+        ogTitle: false,
+        ogDescription: false
+      }
+    }]
   ],
   plugins: [
     { src: '~/plugins/fb-sdk.js', ssr: false },

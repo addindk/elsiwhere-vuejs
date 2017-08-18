@@ -52,13 +52,13 @@ export default {
         { hid: 'twitter:title', name: 'twitter:title', content: this.title },
         { hid: 'twitter:description', name: 'twitter:description', content: this.description },
         { hid: 'twitter:image', name: 'twitter:image', content: this.image },
-        { hid: 'og:url', name: 'og:url', content: this.url },
-        { hid: 'og:title', name: 'og:title', content: this.title },
-        { hid: 'og:description', name: 'og:description', content: this.description },
-        { hid: 'og:image', name: 'og:image', content: this.image },
-        { hid: 'og:site_name', name: 'og:site_name', content: 'Elsiwhere' },
-        { hid: 'fb:app_id', name: 'fb:app_id', content: '1559938820976000' },
-        { hid: 'og:locale', name: 'og:locale', content: 'da_DK' }
+        { property: 'og:url', content: this.url },
+        { property: 'og:title', content: this.title },
+        { property: 'og:description', content: this.description },
+        { property: 'og:image', content: this.image },
+        { property: 'og:site_name', content: 'Elsiwhere' },
+        { property: 'fb:app_id', content: '1559938820976000' },
+        { property: 'og:locale', content: 'da_DK' }
       ]
     }
   },
