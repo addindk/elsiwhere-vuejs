@@ -218,6 +218,7 @@ export default {
       Vue.FB.ui({
         method: 'share_open_graph',
         action_type: 'og.likes',
+        mobile_iframe: true,
         action_properties: JSON.stringify({
           object: 'https://elsiwhere.dk/post/' + key
         })

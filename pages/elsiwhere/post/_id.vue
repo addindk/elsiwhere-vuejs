@@ -52,7 +52,7 @@ export default {
         { hid: 'twitter:title', name: 'twitter:title', content: this.title },
         { hid: 'twitter:description', name: 'twitter:description', content: this.description },
         { hid: 'twitter:image', name: 'twitter:image', content: this.image },
-        { hid: 'og:url', name: 'og:url', content: this.$route.fullPath },
+        { hid: 'og:url', name: 'og:url', content: this.url },
         { hid: 'og:title', name: 'og:title', content: this.title },
         { hid: 'og:description', name: 'og:description', content: this.description },
         { hid: 'og:image', name: 'og:image', content: this.image },
@@ -76,6 +76,11 @@ export default {
     image: {
       get: function () {
         return 'https://elsiwhere.dk/post/512/' + this.$route.params.id + '.jpg'
+      }
+    },
+    url: {
+      get: function () {
+        return 'https://elsiwhere.dk/elsiwhere/post/' + this.$route.params.id
       }
     }
   },
