@@ -215,17 +215,22 @@ export default {
   },
   methods: {
     fbShare: function (key) {
-      Vue.FB.ui({
-        method: 'share_open_graph',
-        action_type: 'og.likes',
-        mobile_iframe: true,
-        action_properties: JSON.stringify({
-          object: 'https://elsiwhere.dk/post/' + key
+      if (navigator.standalone) {
+        const url = 'https://www.facebook.com/dialog/share?app_id=1559938820976000&display=popup&href=https%3A%2F%2Felsiwhere.dk%2Fpost%2F' + key + '&redirect_uri=https%3A%2F%2Felsiwhere.dk%2Felsiwhere%2Fexplore%2F' + this.$route.params.category + '%2F' + this.$route.params.subcategory
+        window.open(url, '_self')
+      } else {
+        Vue.FB.ui({
+          method: 'share_open_graph',
+          action_type: 'og.likes',
+          mobile_iframe: true,
+          action_properties: JSON.stringify({
+            object: 'https://elsiwhere.dk/post/' + key
+          })
+        }, function (response) {
+          // Debug response (optional)
+          console.log(response)
         })
-      }, function (response) {
-        // Debug response (optional)
-        console.log(response)
-      })
+      }
     },
     onFBReady: function () {
       this.isFBReady = true
