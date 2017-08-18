@@ -135,7 +135,9 @@ export default {
     })
     map.on('styledata', function (e) {
       // console.log('styledata')
-
+      setTimeout(function () {
+        map.resize()
+      }, 500)
       const source = map.getSource('items')
       // console.log('source', source)
       if (!source) {

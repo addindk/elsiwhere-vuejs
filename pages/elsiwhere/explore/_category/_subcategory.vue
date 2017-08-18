@@ -40,7 +40,7 @@
                 </v-btn>
                 <v-list>
                   <v-subheader>Del side</v-subheader>
-                  <v-list-tile>
+                  <v-list-tile @click.stop="fbShare(key)">
                     <i class="fa fa-2x fa-facebook-square" aria-hidden="true"></i>
                     <v-list-tile-title class="space">Facebook</v-list-tile-title>
                   </v-list-tile>
@@ -51,7 +51,7 @@
                 </v-list>
               </v-menu>
               <v-spacer />
-              <v-btn flat primary @click.stop="showDelete=!showDelete" v-show="$store.state.userId === value.uid">
+              <v-btn flat primary @click.stop="showDelete(key)" v-show="$store.state.userId === value.uid">
                 SLET
               </v-btn>
             </v-card-actions>
@@ -67,17 +67,17 @@
           </v-btn>
           <v-toolbar-title>Opret ny oplevelse</v-toolbar-title>
         </v-toolbar>
-        <v-stepper v-model="$store.state.form.step" vertical v-if="$store.state.form.show">
-          <v-stepper-step step="1" :complete="$store.state.form.step > 1">
+        <v-stepper v-model="step" vertical>
+          <v-stepper-step step="1" :complete="step > 1">
             Angiv titel og beskrivelse
             <small>Påkrævet</small>
           </v-stepper-step>
           <v-stepper-content step="1">
             <v-text-field v-model="post.title" name="title" label="Overskrift" required></v-text-field>
             <v-text-field v-model="post.description" multi-line name="description" label="Beskrivelse" required></v-text-field>
-            <v-btn primary @click.native="$store.commit('step',2)" :disabled="post.title==='' || post.description===''">Næste</v-btn>
+            <v-btn primary @click.stop="step=2" :disabled="post.title==='' || post.description===''">Næste</v-btn>
           </v-stepper-content>
-          <v-stepper-step step="2" v-bind:complete="$store.state.form.step > 2">
+          <v-stepper-step step="2" v-bind:complete="step > 2">
             Tidsperiode
             <small>Valgfrit trin</small>
           </v-stepper-step>
@@ -104,21 +104,21 @@
                 </template>
               </v-date-picker>
             </v-dialog>
-            <v-btn flat primary @click.native="$store.commit('step',1)">Forrige</v-btn>
-            <v-btn primary @click.native="$store.commit('step',3)">Næste</v-btn>
+            <v-btn flat primary @click.stop="step=1">Forrige</v-btn>
+            <v-btn primary @click.stop="step=3">Næste</v-btn>
           </v-stepper-content>
-          <v-stepper-step step="3" v-bind:complete="$store.state.form.step > 3">
+          <v-stepper-step step="3" v-bind:complete="step > 3">
             Tilføj et billede
             <small>Påkrævet</small>
           </v-stepper-step>
           <v-stepper-content step="3">
             <v-card flat class="grey lighten-1 mb-2" height="300px" :img="post.image">
             </v-card>
-            <v-btn flat primary @click.native.stop="fileselect()">
+            <v-btn flat primary @click.stop="fileselect()">
               Vælg fil
             </v-btn>
-            <v-btn flat primary @click.native="$store.commit('step',2)">Forrige</v-btn>
-            <v-btn primary @click.native="step()" :disabled="post.image===''">Næste</v-btn>
+            <v-btn flat primary @click.stop="step=2">Forrige</v-btn>
+            <v-btn primary @click.stop="showMap()" :disabled="post.image===''">Næste</v-btn>
           </v-stepper-content>
           <v-stepper-step step="4">
             Angiv en placering i kortet
@@ -126,8 +126,8 @@
           </v-stepper-step>
           <v-stepper-content step="4">
             <div id="mappost"></div>
-            <v-btn flat primary @click.native="$store.commit('step',3)">Forrige</v-btn>
-            <v-btn primary @click.native="save()">Gem</v-btn>
+            <v-btn flat primary @click.stop="step=3">Forrige</v-btn>
+            <v-btn primary @click.stop="save()">Gem</v-btn>
             <div class="text-xs-center" v-show="showProgress">
               <v-progress-circular v-bind:size="100" v-bind:width="15" v-bind:rotate="-90" v-bind:value="$store.state.progress" class="primary--text">
                 {{ $store.state.progress }}
@@ -141,11 +141,24 @@
         <v-card-title>
           <div class="headline">Du er ikke logget ind</div>
         </v-card-title>
-        <v-card-text>Vil du logge ind for at tilføre oplevelser</v-card-text>
+        <v-card-text>Vil du logge ind for at tilføre oplevelser?</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn primary flat @click.native="dialogLogin = false">Nej</v-btn>
           <v-btn primary flat @click.native="login()">Ja</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="dialogDelete" lazy absolute>
+      <v-card>
+        <v-card-title>
+          <div class="headline">Slet oplevelse</div>
+        </v-card-title>
+        <v-card-text>Vil du slette oplevelsen?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn primary flat @click.native="dialogDelete = false">Nej</v-btn>
+          <v-btn primary flat @click.native="deletePost()">Ja</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -155,6 +168,7 @@
 </template>
 <script>
 import { firebaseapp } from '~/plugins/firebase'
+import Vue from 'vue'
 // import fileDialog from 'file-dialog'
 import axios from '~/plugins/axios'
 let lnglat
@@ -168,8 +182,11 @@ export default {
   data () {
     const store = this.$store
     return {
+      step: 1,
       showProgress: false,
       dialogLogin: false,
+      dialogDelete: false,
+      currentPost: null,
       title: store.state.title,
       modalStart: false,
       modalStop: false,
@@ -180,7 +197,8 @@ export default {
         start: null,
         stop: null
       },
-      fil: null
+      fil: null,
+      isFBReady: false
     }
   },
   computed: {
@@ -196,6 +214,21 @@ export default {
     }
   },
   methods: {
+    fbShare: function (key) {
+      Vue.FB.ui({
+        method: 'share_open_graph',
+        action_type: 'og.likes',
+        action_properties: JSON.stringify({
+          object: 'https://elsiwhere.dk/post/' + key
+        })
+      }, function (response) {
+        // Debug response (optional)
+        console.log(response)
+      })
+    },
+    onFBReady: function () {
+      this.isFBReady = true
+    },
     login: function () {
       this.dialogLogin = false
       this.$router.push({ name: 'login', query: { signInSuccessUrl: this.$route.path } })
@@ -229,6 +262,34 @@ export default {
         console.log(res.data)
         this.showProgress = false
         this.show = false
+        this.step = 1
+        this.post = {
+          title: '',
+          description: '',
+          image: '',
+          start: null,
+          stop: null
+        }
+        this.img = null
+        this.$store.commit('progress', 0)
+      }).catch(function (err) {
+        console.log(err)
+      })
+    },
+    showDelete: function (key) {
+      this.currentPost = key
+      this.dialogDelete = true
+    },
+    deletePost: function () {
+      this.dialogDelete = false
+      const data = {
+        id: this.currentPost
+      }
+      firebaseapp.auth().currentUser.getToken(/* forceRefresh */ true).then(function (idToken) {
+        data.token = idToken
+        return axios.post('/api/post/delete/', data)
+      }).then(function (res) {
+        console.log(res.data)
       }).catch(function (err) {
         console.log(err)
       })
@@ -279,8 +340,8 @@ export default {
         fr.readAsDataURL(this.fil)
       })
     },
-    step: function () {
-      this.$store.commit('step', 4)
+    showMap: function () {
+      this.step = 4
       console.log('mounted')
       const mapboxgl = require('mapbox-gl/dist/mapbox-gl')
       mapboxgl.accessToken = 'pk.eyJ1IjoicnVuZXR2aWx1bSIsImEiOiJkeUg2WVkwIn0.yoMmv3etOc40RXkPsebXSg'
@@ -347,7 +408,12 @@ export default {
       */
     }
   },
+  beforeDestroy: function () {
+    window.removeEventListener('fb-sdk-ready', this.onFBReady)
+  },
   mounted () {
+    this.isFBReady = Vue.FB !== undefined
+    window.addEventListener('fb-sdk-ready', this.onFBReady)
     const store = this.$store
     const params = this.$route.params
     if (!store.state.categories.hasOwnProperty(params.category)) {
@@ -362,6 +428,9 @@ export default {
     console.log('subcategory', params.subcategory)
     firebaseapp.database().ref('post').orderByChild('c').equalTo(params.subcategory).on('child_added', (data) => {
       store.commit('posts', data)
+    })
+    firebaseapp.database().ref('post').orderByChild('c').equalTo(params.subcategory).on('child_removed', (data) => {
+      store.commit('removePost', data)
     })
   },
   fetch ({ store, params }) {

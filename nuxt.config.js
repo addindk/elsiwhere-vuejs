@@ -28,6 +28,7 @@ module.exports = {
     ['@nuxtjs/pwa', { optimize: false }]
   ],
   plugins: [
+    { src: '~/plugins/fb-sdk.js', ssr: false },
     '~/plugins/vuetify.js',
     { src: 'mapbox-gl/dist/mapbox-gl', ssr: false }
   ],

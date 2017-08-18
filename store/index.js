@@ -136,6 +136,19 @@ const store = () => new Vuex.Store({
       state.subcategories = { ...state.subcategories, ...res.val }
       state.description = res.val.d
     },
+    removePost (state, data) {
+      const post = data.val()
+      if (state.posts.hasOwnProperty(data.key)) {
+        let newPosts = Object.assign({}, state.posts)
+        delete newPosts[data.key]
+        state.posts = newPosts
+      }
+      if (state.postsBySubcategory.hasOwnProperty(post.c) && state.postsBySubcategory[post.c].hasOwnProperty(data.key)) {
+        let newPosts = Object.assign({}, state.postsBySubcategory[post.c])
+        delete newPosts[data.key]
+        state.postsBySubcategory[post.c] = newPosts
+      }
+    },
     post (state, data) {
       state.post.d = data.d
       state.post.t = data.t

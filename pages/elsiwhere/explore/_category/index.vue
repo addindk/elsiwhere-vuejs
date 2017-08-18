@@ -13,7 +13,7 @@
       <v-card-title style="min-height: 100px; position: relative" :class="$store.state.color" class="description">
         {{$store.state.description}}
         <v-fab-transition>
-          <v-btn absolute light fab top right @click.stop="show=!show">
+          <v-btn absolute light fab top right @click.stop="show=!show" v-show="showAdd">
             <v-icon>add</v-icon>
           </v-btn>
         </v-fab-transition>
@@ -52,6 +52,7 @@ export default {
   data () {
     const store = this.$store
     return {
+      showAdd: false,
       title: store.state.title
     }
   },

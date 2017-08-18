@@ -1,10 +1,12 @@
 import { Router } from 'express'
+import bodyParser from 'body-parser'
 import Busboy from 'busboy'
 import sharp from 'sharp'
 import fs from 'fs'
 import mkdirp from 'mkdirp'
 import * as admin from 'firebase-admin'
 import Twitter from 'twitter'
+const jsonParser = bodyParser.json()
 const configTwitter = require('../../twitter.json')
 const serviceAccount = require('../../project-1805673855421320284-firebase-adminsdk-aiu7q-fd9a9b77fb.json')
 const client = new Twitter(configTwitter)
@@ -22,6 +24,28 @@ const mkdir = function (p) {
         resolve()
       }
     })
+  })
+}
+
+const removeFile = function (name) {
+  return new Promise(function (resolve, reject) {
+    fs.unlink(name, function (err) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+const removeImages = function (id) {
+  return removeFile('static/post/raw/' + id + '.jpg').then(function () {
+    return removeFile('static/post/1024/' + id + '.jpg')
+  }).then(function () {
+    return removeFile('static/post/512/' + id + '.jpg')
+  }).then(function () {
+    return removeFile('static/post/256/' + id + '.jpg')
   })
 }
 
@@ -88,9 +112,13 @@ router.post('/post', function (req, res, next) {
     }).then(() => {
       doc.ts = Date.now()
       return firebase.database().ref('post').child(key).set(doc)
-    }).then(function () {
+    })
+    /*
+    .then(function () {
       return tweet('https://elsiwhere.dk/elsiwhere/post/' + key)
-    }).then(() => {
+    })
+    */
+    .then(() => {
       res.status(200).end()
     }).catch((err) => {
       res.status(500).json(err)
@@ -98,5 +126,30 @@ router.post('/post', function (req, res, next) {
   })
   req.pipe(busboy)
 })
-
+router.post('/post/delete', jsonParser, function (req, res) {
+  console.log(req.body)
+  if (!req.body && !req.body.token && !req.body.id) {
+    return res.status(400).end()
+  }
+  let uid
+  admin.auth().verifyIdToken(req.body.token).then(function (decodedToken) {
+    uid = decodedToken.uid
+    console.log('uid', uid)
+    return firebase.database().ref('post').child(req.body.id).once('value')
+  }).then((data) => {
+    const post = data.val()
+    console.log('post', post)
+    if (post.uid === uid) {
+      return firebase.database().ref('post').child(req.body.id).remove()
+    }
+    return Promise.reject(new Error('user id does not match post id'))
+  }).then(() => {
+    console.log('removeimages')
+    return removeImages(req.body.id)
+  }).then(() => {
+    res.status(200).end()
+  }).catch((err) => {
+    res.status(500).json(err)
+  })
+})
 export default router
