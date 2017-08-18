@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-toolbar>
+    <v-toolbar dark class="indigo">
       <v-btn icon="icon" @click.native="$router.go(-1)" light>
         <v-icon>close</v-icon>
       </v-btn>

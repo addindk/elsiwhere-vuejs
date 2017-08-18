@@ -21,6 +21,7 @@ export default {
   },
   mounted () {
     const router = this.$router
+    const store = this.$store
     console.log('mounted')
     if (!firebaseui) {
       firebaseui = require('firebaseui')
@@ -33,7 +34,8 @@ export default {
         // Return type determines whether we continue the redirect automatically
         // or whether we leave that to developer to handle.
         console.log(currentUser, credential, redirectUrl)
-        router.go(-2)
+        store.commit('user', { currentUser: currentUser, providerId: credential.providerId })
+        router.push(redirectUrl)
         return false
       }
     }

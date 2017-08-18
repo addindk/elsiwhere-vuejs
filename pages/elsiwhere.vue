@@ -6,14 +6,15 @@
       enable-resize-watcher
       height="100%"
       v-model="drawer" >
-      <div class="profile-content">
-          <img class="profile-image" v-bind:src="$store.state.user.photoURL" />
+      <v-card class="profile-content">
+          <img class="profile-image" :src="$store.state.user.photoURL"/>
           <h6 class="profile-title">{{$store.state.user.displayName}}</h6>
           <v-card-actions>
-            <v-btn flat light v-show="$store.state.loggedin" @click.native.stop="$store.dispatch('logout')">LOGOUT</v-btn>
-            <v-btn flat light v-show="!$store.state.loggedin" @click.native.stop="$router.push({name:'login'})">LOGIN</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn flat dark v-show="$store.state.userId!==''" @click.stop="$store.dispatch('logout')">LOGOUT</v-btn>
+            <v-btn flat dark v-show="$store.state.userId===''" @click.stop="login()">LOGIN</v-btn>
           </v-card-actions>
-        </div>
+        </v-card>
         <v-list>
           <v-list-tile to="/" nuxt ripple>
             <!--v-list-tile-avatar>
@@ -119,6 +120,28 @@ export default {
       drawer: false
     }
   },
+  methods: {
+    login: function () {
+      const router = this.$router
+      const route = this.$route
+      router.push({ name: 'login', query: { signInSuccessUrl: route.path } })
+    }
+  },
+  mounted () {
+    const store = this.$store
+    firebaseapp.auth().onAuthStateChanged(function (user) {
+      store.commit('user', { currentUser: user })
+      if (user && user.emailVerified) {
+        if (!user.emailVerified) {
+          user.sendEmailVerification()
+          store.commit('emailverification', true)
+        }
+        // firebaseapp.database().ref('users')
+      } else {
+
+      }
+    })
+  },
   fetch ({ store, route }) {
     store.commit('title', 'Forside')
     if (Object.keys(store.state.categories).length === 0) {
@@ -136,6 +159,8 @@ export default {
   padding: 10px
 
 .profile-image
+  height: 80px;
+  width: 80px;
   display: block
   border-radius:50%
   margin-left: auto

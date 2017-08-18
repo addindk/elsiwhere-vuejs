@@ -42,16 +42,14 @@ const store = () => new Vuex.Store({
     subcategoriesByCategory: {},
     posts: {},
     postsBySubcategory: {},
-    loggedin: false,
+    userId: '',
     sidebar: true,
     title: 'elsiwhere',
     description: '',
     color: '',
     toolbar: 'blue',
-    user: {
-      photoURL: 'https://www.gravatar.com/avatar/?d=identicon',
-      displayName: 'Ikke logget ind'
-    },
+    providerId: '',
+    user: {},
     post: {
       d: '',
       t: ''
@@ -60,6 +58,9 @@ const store = () => new Vuex.Store({
     image: ''
   },
   mutations: {
+    providerId (state, data) {
+      state.providerId = data
+    },
     step (state, step) {
       state.form.step = step
     },
@@ -98,19 +99,26 @@ const store = () => new Vuex.Store({
     toolbar (state, color) {
       state.toolbar = color
     },
-    user (state, user) {
-      if (process.BROWSER_BUILD) {
-        window.console.log(user)
-      }
-      if (user) {
-        state.user = user
-        state.loggedin = true
+    user (state, { currentUser, providerId }) {
+      if (currentUser) {
+        state.userId = currentUser.uid
+        if (providerId) {
+          state.providerId = providerId
+          for (let i = 0; i < currentUser.providerData; i++) {
+            const provider = currentUser.providerData[i]
+            if (provider.providerId === providerId) {
+              state.user = provider
+            }
+          }
+        } else {
+          state.user = currentUser.providerData[0]
+        }
       } else {
+        state.userId = ''
         state.user = {
           photoURL: 'https://www.gravatar.com/avatar/?d=identicon',
           displayName: 'Ikke logget ind'
         }
-        state.loggedin = false
       }
     },
     error (state, error) {
@@ -205,17 +213,5 @@ const store = () => new Vuex.Store({
 })
 if (process.BROWSER_BUILD) {
   console.log('browser_build')
-  firebaseapp.auth().onAuthStateChanged(function (user) {
-    store.commit('user', user)
-    if (user && user.emailVerified) {
-      if (!user.emailVerified) {
-        user.sendEmailVerification()
-        store.commit('emailverification', true)
-      }
-      firebaseapp.database().ref('users')
-    } else {
-
-    }
-  })
 }
 export default store
