@@ -246,6 +246,7 @@ export default {
     return {
       allowedDates: function (date) {
         let d = new Date()
+        d.setHours(12, 0, 0, 0)
         return date >= d && date < d.setFullYear(d.getFullYear() + 1)
       },
       days,
