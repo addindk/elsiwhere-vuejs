@@ -34,7 +34,7 @@
         </div>
       </v-list>
     </v-card>
-    <h6 class="text-xs-center" v-if="$store.state.events.length === 0">Ingen events denne dag</h6>
+    <h6 class="text-xs-center" v-if="items.length === 0">Ingen events denne dag</h6>
   </v-container>
 </template>
 <script>
