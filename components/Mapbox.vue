@@ -1,24 +1,33 @@
 <template>
-  <v-container fluid class="map-container">
+  <div class="map-container">
     <div id='map'></div>
     <v-dialog width="400" v-model="show" class="map-modal">
       <v-card class="map-card">
         <v-card-title>
-          <div class="headline">{{$store.state.popup.title}}</div>
+          <div class="headline">{{$store.state.popup.t}}</div>
         </v-card-title>
         <v-card-media :src="'/post/512/'+$store.state.popup.id+'.jpg'" height="256px"></v-card-media>
         <v-card-text class="fill">
-          {{$store.state.popup.description}}
+          {{$store.state.popup.d}}
+        </v-card-text>
+        <v-card-text class="primary white--text" v-if="$store.state.popup.start && $store.state.popup.stop">
+          <p>Åbningstider: {{$store.state.popup.start}} - {{$store.state.popup.stop}}</p>
+          <div v-for="day in days" :key="day">
+            <v-layout row v-if="$store.state.popup.open[day].active">
+              <v-flex style="flex-grow: 0">{{day}}</v-flex>
+              <v-flex>{{$store.state.popup.open[day].start}} - {{$store.state.popup.open[day].stop}}</v-flex>
+            </v-layout>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn flat dark primary @click.native.stop="show=!show">
+          <v-btn flat dark primary @click.stop="show=false">
             Luk
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </div>
 </template>
 <script>
 let map
@@ -38,31 +47,15 @@ export default {
     },
     sidebar: Boolean
   },
-  computed: {
-    show: {
-      get: function () {
-        // console.log('get', this.$store.state.popup.show)
-        return this.$store.state.popup.show
-      },
-      set: function (show) {
-        // console.log('set', show)
-        this.$store.commit('showpopup', show)
-      }
-    }
-  },
-  methods: {
-    populatePopup (feature) {
-      this.$store.commit('popup', feature)
-    },
-    showPopup (show) {
-      this.$store.commit('showpopup', show)
-      // this.show2 = show
-      // console.log('show', this.show)
+  data () {
+    return {
+      show: false,
+      days: ['mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag']
     }
   },
   watch: {
     sidebar: function (data) {
-      // console.log('watch sidebar', data)
+      console.log('watch sidebar', data)
       if (!data) {
         setTimeout(function () {
           map.resize()
@@ -78,14 +71,11 @@ export default {
           'features': []
         }
         Object.keys(data).forEach(function (key) {
-          let post = data[key]
+          const post = data[key]
           geojson.features.push({
             'type': 'Feature',
             'properties': {
               'id': key,
-              'c': post.c,
-              't': post.t,
-              'd': post.d,
               'i': post.i
             },
             'geometry': {
@@ -117,8 +107,9 @@ export default {
         return
       }
       var feature = features[0]
-      this.populatePopup(feature)
-      this.showPopup(true)
+      console.log(feature)
+      this.$store.commit('popup', feature)
+      this.show = true
 
       // Populate the popup and set its coordinates
       // based on the feature found.
@@ -147,14 +138,11 @@ export default {
         }
         const geofire = this.geofire
         Object.keys(geofire).forEach(function (key) {
-          let post = geofire[key]
+          const post = geofire[key]
           geojson.features.push({
             'type': 'Feature',
             'properties': {
               'id': key,
-              'c': post.c,
-              't': post.t,
-              'd': post.d,
               'i': post.i
             },
             'geometry': {
@@ -254,7 +242,8 @@ export default {
 
 <style lang="stylus">
 .map-container
-  padding: 0
+  height: 100%
+  width: 100%
 #map
   height: calc(100vh - 64px)
   width: 100%
@@ -264,7 +253,7 @@ export default {
   display: flex
   flex-direction: column
   flex: 1 0 100%
-  .card__text
+  .fill
     flex: 1 1 100%
 
 @media only screen and (max-width: 576px)

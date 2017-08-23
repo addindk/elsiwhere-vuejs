@@ -1,6 +1,6 @@
 import Vuex from 'vuex'
 import {firebaseapp, providers} from '~/plugins/firebase'
-
+import moment from 'moment'
 // var firebaseui = require('firebaseui');
 // import 'firebase/auth'
 // import 'firebase/database'
@@ -15,16 +15,15 @@ var config = {
 firebase.initializeApp(config)
 */
 // var provider = new firebase.auth().FacebookAuthProvider()
+let ref
+
 const store = () => new Vuex.Store({
   state: {
+    dato: null,
+    events: {},
     colors: ['red', 'cyan', 'lime', 'deep-purple'],
     showLogin: false,
-    popup: {
-      id: '',
-      show: false,
-      title: '',
-      description: ''
-    },
+    popup: {},
     progress: 0,
     form: {
       step: 1,
@@ -43,7 +42,7 @@ const store = () => new Vuex.Store({
     posts: {},
     postsBySubcategory: {},
     userId: '',
-    sidebar: true,
+    sidebar: false,
     title: 'elsiwhere',
     description: '',
     color: '',
@@ -58,6 +57,30 @@ const store = () => new Vuex.Store({
     image: ''
   },
   mutations: {
+    dato (state, data) {
+      let childAdded = function (data) {
+        let item = {}
+        item[data.key] = data.val()
+        state.events = {...state.events, ...item}
+      }
+      let childRemoved = function (data) {
+        if (state.events.hasOwnProperty(data.key)) {
+          let newEvents = Object.assign({}, state.events)
+          delete newEvents[data.key]
+          state.events = newEvents
+        }
+      }
+      state.dato = data
+      if (ref) {
+        state.events = {}
+        ref.off('child_added', childAdded)
+        ref.off('child_removed', childAdded)
+      }
+      let today = moment(data, 'DD-MM-YYYY')
+      ref = firebaseapp.database().ref('calendar').child(today.format('YYYY')).child(today.format('MM')).child(today.format('DD'))
+      ref.on('child_added', childAdded)
+      ref.on('child_removed', childRemoved)
+    },
     providerId (state, data) {
       state.providerId = data
     },
@@ -68,9 +91,9 @@ const store = () => new Vuex.Store({
       state.progress = data
     },
     popup (state, feature) {
-      state.popup.title = feature.properties.t
-      state.popup.description = feature.properties.d
-      state.popup.id = feature.properties.id
+      if (state.posts.hasOwnProperty(feature.properties.id)) {
+        state.popup = {...state.posts[feature.properties.id], ...{ id: feature.properties.id }}
+      }
     },
     showpopup (state, show) {
       state.popup.show = show
@@ -150,8 +173,7 @@ const store = () => new Vuex.Store({
       }
     },
     post (state, data) {
-      state.post.d = data.d
-      state.post.t = data.t
+      state.post = data
     },
     posts (state, data) {
       const val = data.val()

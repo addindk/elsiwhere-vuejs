@@ -1,11 +1,12 @@
 <template>
   <v-app id="elsiwhere">
-    <v-navigation-drawer 
+    <v-navigation-drawer
+      right
       persistent 
       light 
       enable-resize-watcher
       height="100%"
-      v-model="drawer" >
+      v-model="$store.state.sidebar" >
       <v-card class="profile-content">
           <img class="profile-image" :src="$store.state.user.photoURL"/>
           <h6 class="profile-title">{{$store.state.user.displayName}}</h6>
@@ -36,7 +37,7 @@
               <v-list-tile-title class="grey--text text--darken-3">Oplevelser</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile to="/elsiwhere/events" nuxt ripple>
+          <v-list-tile @click.stop="events()" ripple>
             <!--v-list-tile-avatar>
                   <v-btn floating small dark class="pink">
                     <v-icon>event</v-icon>
@@ -60,10 +61,10 @@
       
     </v-navigation-drawer>
     <v-toolbar fixed dark class="indigo">
-      <v-toolbar-side-icon @click.stop="drawer = !drawer" />
-      <!--v-btn dark icon @click.native.stop="$router.go(-1)">
-            <v-icon>arrow_back</v-icon>
-          </v-btn-->
+      
+      <v-btn dark icon @click.stop="$router.go(-1)">
+        <v-icon>arrow_back</v-icon>
+      </v-btn>
       <!--v-toolbar-logo><img height="63px" src="~assets/img/logo.png" /></v-toolbar-logo-->
       <v-toolbar-title class="pacifico" style="cursor: pointer" @click="$router.push({name:'index'})">Elsiwhere</v-toolbar-title>
       <!--v-toolbar-title>{{$store.state.title}}</v-toolbar-title-->
@@ -71,10 +72,11 @@
       <v-spacer/>
   
       <v-toolbar-items class="hidden-md-and-down">
-        <v-btn flat nuxt router ripple href="/explore">Oplevelser</v-btn>
-        <v-btn flat nuxt router ripple href="/events">Events</v-btn>
-        <v-btn flat nuxt router ripple href="/map">Kort</v-btn>        
+        <v-btn flat nuxt ripple to="/explore">Oplevelser</v-btn>
+        <v-btn flat ripple @click.stop="events()">Events</v-btn>
+        <v-btn flat nuxt ripple to="/map">Kort</v-btn>        
       </v-toolbar-items>
+      <v-toolbar-side-icon @click.stop="$store.commit('toggle')" />
     </v-toolbar>
     <main>
         <nuxt-child/>
@@ -102,6 +104,7 @@
 // import FirebaseUI from '~components/FirebaseUI.vue'
 // import FirebaseLogin from '~components/FirebaseLogin.vue'
 import { firebaseapp } from '~/plugins/firebase'
+import moment from 'moment'
 export default {
   /*
   components: {
@@ -125,6 +128,10 @@ export default {
       const router = this.$router
       const route = this.$route
       router.push({ name: 'login', query: { signInSuccessUrl: route.path } })
+    },
+    events: function () {
+      this.$store.commit('dato', moment().format('DD-MM-YYYY'))
+      this.$router.push({ name: 'elsiwhere-events-id', params: { id: this.$store.state.dato } })
     }
   },
   mounted () {

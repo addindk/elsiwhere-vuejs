@@ -22,13 +22,22 @@
     <v-container fluid grid-list-md v-show="!show" class="grey lighten-4">
       <v-layout row wrap>
         <v-flex xs12 md6 v-for="(value, key) in $store.state.posts" :key="key" v-if="value.c === $route.params.subcategory">
-          <v-card>
+          <v-card height="100%">
             <v-card-title>
               {{value.t}}
             </v-card-title>
             <v-card-media style="cursor: pointer" @click.stop="$router.push({ name: 'elsiwhere-post-id', params: { id: key } })" :src="'/post/512/'+key+'.jpg'" height="300px"></v-card-media>
             <v-card-text>
               <div>{{value.d}}</div>
+            </v-card-text>
+            <v-card-text class="primary white--text" v-if="value.start && value.stop">
+              <p>Åbningstider: {{value.start}} - {{value.stop}}</p>
+              <div v-for="day in days" :key="day">
+                <v-layout row v-if="value.open[day].active">
+                  <v-flex style="flex-grow: 0">{{day}}</v-flex>
+                  <v-flex>{{value.open[day].start}} - {{value.open[day].stop}}</v-flex>
+                </v-layout>
+              </div>
             </v-card-text>
             <v-card-actions>
               <v-btn light icon class="grey--text text--darken-3" @click.stop="$router.push({ name: 'elsiwhere-map-id', params: { id: key }})">
@@ -84,7 +93,7 @@
           <v-stepper-content step="2">
             <v-dialog persistent v-model="modalStart" lazy full-width>
               <v-text-field slot="activator" label="Start dato" v-model="post.start" append-icon="event" readonly></v-text-field>
-              <v-date-picker v-model="post.start" scrollable locale="da-dk">
+              <v-date-picker :date-format="date => format(date)" :formatted-value.sync="post.start" v-model="post.startPicker" scrollable locale="da-dk" :allowed-dates="allowedDates">
                 <template scope="{ save, cancel }">
                   <v-card-actions>
                     <v-btn flat primary @click.native="cancel()">Fortryd</v-btn>
@@ -95,7 +104,7 @@
             </v-dialog>
             <v-dialog persistent v-model="modalStop" lazy full-width>
               <v-text-field slot="activator" label="Slut dato" v-model="post.stop" append-icon="event" readonly></v-text-field>
-              <v-date-picker v-model="post.stop" scrollable locale="da-dk">
+              <v-date-picker :date-format="date => format(date)" :formatted-value.sync="post.stop" v-model="post.stopPicker" scrollable locale="da-dk" :allowed-dates="allowedDates">
                 <template scope="{ save, cancel }">
                   <v-card-actions>
                     <v-btn flat primary @click.native="cancel()">Fortryd</v-btn>
@@ -104,6 +113,38 @@
                 </template>
               </v-date-picker>
             </v-dialog>
+            <v-subheader>Åbningstider</v-subheader>
+            <div v-for="day in days" :key="day">
+              <v-switch v-model="post.open[day].active" :label="day"></v-switch>
+              <v-layout row wrap>
+                <v-flex md6>
+                  <v-dialog persistent v-model="modals[day].start" lazy v-if="post.open[day].active">
+                    <v-text-field slot="activator" label="Åbner kl." v-model="post.open[day].start" append-icon="access_time" readonly></v-text-field>
+                    <v-time-picker v-model="post.open[day].start" actions format="24hr">
+                      <template scope="{ save, cancel }">
+                        <v-card-actions>
+                          <v-btn flat primary @click.native="cancel()">Fortryd</v-btn>
+                          <v-btn flat primary @click.native="save()">Gem</v-btn>
+                        </v-card-actions>
+                      </template>
+                    </v-time-picker>
+                  </v-dialog>
+                </v-flex>
+                <v-flex md6>
+                  <v-dialog persistent v-model="modals[day].stop" lazy v-if="post.open[day].active">
+                    <v-text-field slot="activator" label="Lukker kl." v-model="post.open[day].stop" append-icon="access_time" readonly></v-text-field>
+                    <v-time-picker v-model="post.open[day].stop" actions format="24hr">
+                      <template scope="{ save, cancel }">
+                        <v-card-actions>
+                          <v-btn flat primary @click.native="cancel()">Fortryd</v-btn>
+                          <v-btn flat primary @click.native="save()">Gem</v-btn>
+                        </v-card-actions>
+                      </template>
+                    </v-time-picker>
+                  </v-dialog>
+                </v-flex>
+              </v-layout>
+            </div>
             <v-btn flat primary @click.stop="step=1">Forrige</v-btn>
             <v-btn primary @click.stop="step=3">Næste</v-btn>
           </v-stepper-content>
@@ -169,6 +210,7 @@
 <script>
 import { firebaseapp } from '~/plugins/firebase'
 import Vue from 'vue'
+import moment from 'moment'
 // import fileDialog from 'file-dialog'
 import axios from '~/plugins/axios'
 let lnglat
@@ -180,8 +222,34 @@ export default {
     }
   },
   data () {
+    let post = {
+      title: '',
+      description: '',
+      image: '',
+      start: null,
+      startPicker: null,
+      stopPicker: null,
+      stop: null,
+      open: {}
+    }
+    let modals = {}
+    let days = [ 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag', 'søndag' ]
+    days.forEach((day) => {
+      modals[day] = { start: false, stop: false }
+      post.open[day] = {
+        active: false,
+        start: null,
+        stop: null
+      }
+    })
     const store = this.$store
     return {
+      allowedDates: function (date) {
+        let d = new Date()
+        return date >= d && date < d.setFullYear(d.getFullYear() + 1)
+      },
+      days,
+      modals,
       step: 1,
       showProgress: false,
       dialogLogin: false,
@@ -190,15 +258,18 @@ export default {
       title: store.state.title,
       modalStart: false,
       modalStop: false,
-      post: {
-        title: '',
-        description: '',
-        image: '',
-        start: null,
-        stop: null
-      },
+      mondayModalStart: false,
+      mondayModalStop: false,
+      post,
       fil: null,
-      isFBReady: false
+      isFBReady: false,
+      monday: false,
+      tuesday: false,
+      wendsday: false,
+      thursday: false,
+      friday: false,
+      saturday: false,
+      sunday: false
     }
   },
   computed: {
@@ -214,6 +285,9 @@ export default {
     }
   },
   methods: {
+    format: function (date) {
+      return moment(date).format('DD-MM-YYYY')
+    },
     fbShare: function (key) {
       if (navigator.standalone) {
         const url = 'https://www.facebook.com/dialog/share?app_id=1559938820976000&display=popup&href=https%3A%2F%2Felsiwhere.dk%2Fpost%2F' + key + '&redirect_uri=https%3A%2F%2Felsiwhere.dk%2Felsiwhere%2Fexplore%2F' + this.$route.params.category + '%2F' + this.$route.params.subcategory
@@ -259,6 +333,7 @@ export default {
       data.append('c', this.$route.params.subcategory)
       data.append('uid', this.$store.state.userId)
       data.append('image', this.fil)
+      data.append('open', JSON.stringify(this.post.open))
       const config = {
         onUploadProgress: function (progressEvent) {
           store.commit('progress', Math.round((progressEvent.loaded * 100) / progressEvent.total))
@@ -277,6 +352,28 @@ export default {
           stop: null
         }
         this.img = null
+        let days = [...this.days]
+        let modals = []
+        let post = {
+          title: '',
+          description: '',
+          image: '',
+          start: null,
+          startPicker: null,
+          stopPicker: null,
+          stop: null,
+          open: {}
+        }
+        days.forEach((day) => {
+          modals[day] = { start: false, stop: false }
+          post.open[day] = {
+            active: false,
+            start: null,
+            stop: null
+          }
+        })
+        this.post = post
+        this.modals = modals
         this.$store.commit('progress', 0)
       }).catch(function (err) {
         console.log(err)
@@ -385,9 +482,6 @@ export default {
         style: tilejson,
         center: new mapboxgl.LngLat(12, 56),
         zoom: 7,
-        pitchWithRotate: false,
-        dragRotate: false,
-        touchZoomRotate: false,
         attributionControl: false
       })
       const el = document.createElement('div')

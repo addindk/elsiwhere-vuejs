@@ -6,6 +6,8 @@ import fs from 'fs'
 import mkdirp from 'mkdirp'
 import * as admin from 'firebase-admin'
 import Twitter from 'twitter'
+import moment from 'moment'
+moment.locale('da')
 const jsonParser = bodyParser.json()
 const configTwitter = require('../../twitter.json')
 const serviceAccount = require('../../project-1805673855421320284-firebase-adminsdk-aiu7q-fd9a9b77fb.json')
@@ -96,12 +98,14 @@ router.post('/post', function (req, res, next) {
       inputBuffer = Buffer.concat(inputBuffer)
     })
   })
-  busboy.on('field', function (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
-    console.log('Field [' + fieldname + ']: value: ' + val)
-    doc[fieldname] = val
+  busboy.on('field', function (fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {    
+    if (fieldname === 'open') {
+      doc[fieldname] = JSON.parse(val)
+    } else {
+      doc[fieldname] = val
+    }
   })
   busboy.on('finish', function () {
-    console.log('Done parsing form!')
     const key = firebase.database().ref('post').push().key
     writeFile('static/post/raw', key + '.jpg', inputBuffer).then(() => {
       return convert(key, inputBuffer, 256)
@@ -119,33 +123,66 @@ router.post('/post', function (req, res, next) {
     }).catch((err) => {
       res.status(500).json(err)
     })
+    if (doc.start && doc.stop) {
+      let start = moment(doc.start, 'DD-MM-YYYY')
+      let stop = moment(doc.stop, 'DD-MM-YYYY')
+      if (stop.isBefore(start)) {
+        let temp = start
+        start = stop
+        stop = temp
+      }
+      while (start.isSameOrBefore(stop)) {
+        let day = doc.open[start.format('dddd')]
+        if (day.active && day.start && day.stop) {
+          firebase.database().ref('calendar').child(start.format('YYYY')).child(start.format('MM')).child(start.format('DD')).child(key).set({
+            t: doc.t,
+            o: day.start,
+            c: day.stop
+          })
+        }
+        start.add(1, 'd')
+      }
+    }
   })
   req.pipe(busboy)
 })
 router.post('/post/delete', jsonParser, function (req, res) {
-  console.log(req.body)
   if (!req.body && !req.body.token && !req.body.id) {
     return res.status(400).end()
   }
   let uid
   admin.auth().verifyIdToken(req.body.token).then(function (decodedToken) {
     uid = decodedToken.uid
-    console.log('uid', uid)
     return firebase.database().ref('post').child(req.body.id).once('value')
   }).then((data) => {
-    const post = data.val()
-    console.log('post', post)
-    if (post.uid === uid) {
-      return firebase.database().ref('post').child(req.body.id).remove()
+    let doc = data.val()
+    if (doc.uid === uid) {
+      return firebase.database().ref('post').child(req.body.id).remove().then(() => {
+        if (doc && doc.start && doc.stop) {
+          let start = moment(doc.start, 'DD-MM-YYYY')
+          let stop = moment(doc.stop, 'DD-MM-YYYY')
+          if (stop.isBefore(start)) {
+            let temp = start
+            start = stop
+            stop = temp
+          }
+          while (start.isSameOrBefore(stop)) {
+            let day = doc.open[start.format('dddd')]
+            if (day.active && day.start && day.stop) {
+              firebase.database().ref('calendar').child(start.format('YYYY')).child(start.format('MM')).child(start.format('DD')).child(req.body.id).remove()
+            }
+            start.add(1, 'd')
+          }
+        }
+      })
     }
     return Promise.reject(new Error('user id does not match post id'))
   }).then(() => {
-    console.log('removeimages')
     return removeImages(req.body.id)
   }).then(() => {
     res.status(200).end()
   }).catch((err) => {
     res.status(500).json(err)
-  })
+  })  
 })
 export default router
