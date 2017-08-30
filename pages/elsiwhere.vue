@@ -57,6 +57,11 @@
               <v-list-tile-title class="grey--text text--darken-3">Kort</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
+          <v-list-tile to="/elsiwhere/about" nuxt ripple>
+            <v-list-tile-content>
+              <v-list-tile-title class="grey--text text--darken-3">Om Elsiwhere</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
         </v-list>
       
     </v-navigation-drawer>
@@ -72,9 +77,9 @@
       <v-spacer/>
   
       <v-toolbar-items class="hidden-md-and-down">
-        <v-btn flat nuxt ripple to="/explore">Oplevelser</v-btn>
+        <v-btn flat nuxt ripple to="/elsiwhere/explore">Oplevelser</v-btn>
         <v-btn flat ripple @click.stop="events()">Events</v-btn>
-        <v-btn flat nuxt ripple to="/map">Kort</v-btn>        
+        <v-btn flat nuxt ripple to="/elsiwhere/map">Kort</v-btn>        
       </v-toolbar-items>
       <v-toolbar-side-icon @click.stop="$store.commit('toggle')" />
     </v-toolbar>

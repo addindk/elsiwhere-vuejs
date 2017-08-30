@@ -37,12 +37,9 @@ const uiConfig = {
       // Do something.
       // Return type determines whether we continue the redirect automatically
       // or whether we leave that to developer to handle.
-      console.log(currentUser, credential, redirectUrl)
       return false
     }
   },
   signInFlow: 'redirect' // popup'
 }
-let date = new Date()
-console.log('firebase initialized from server', date)
 export { firebaseapp, providers, uiConfig }

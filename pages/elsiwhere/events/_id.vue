@@ -12,9 +12,13 @@
         <v-btn flat fab @click="next">
           <v-icon>chevron_right</v-icon>
         </v-btn>
-
+        
       </div>
-      <v-list two-line>
+      <v-list two-line class="description">
+          <v-btn v-tooltip:left="{ html: 'Opret nyt event' }" absolute dark fab top right class="orange" nuxt to="/elsiwhere/explore">
+            <v-icon>add</v-icon>
+          </v-btn>
+
         <div v-for="item in items" v-bind:key="item.key">
           <v-divider inset></v-divider>
           <v-list-tile avatar nuxt :to="'/elsiwhere/post/' + item.key">
@@ -80,12 +84,7 @@ export default {
 }
 </script>
 
-<style scoped>
-.calender {
-  position: absolute;
-  top: 63px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
+<style lang="stylus" scoped>
+.description
+  position: relative
 </style>

@@ -107,7 +107,6 @@ export default {
           })
         }, function (response) {
           // Debug response (optional)
-          console.log(response)
         })
       }
     },
@@ -119,10 +118,6 @@ export default {
       firebaseapp.auth().currentUser.getToken(/* forceRefresh */ true).then(function (idToken) {
         data.token = idToken
         return axios.post('/api/post/delete/', data)
-      }).then(function (res) {
-        console.log(res.data)
-      }).catch(function (err) {
-        console.log(err)
       })
     }
   },

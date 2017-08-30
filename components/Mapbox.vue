@@ -55,7 +55,6 @@ export default {
   },
   watch: {
     sidebar: function (data) {
-      console.log('watch sidebar', data)
       if (!data) {
         setTimeout(function () {
           map.resize()
@@ -65,13 +64,15 @@ export default {
     geofire: function (data) {
       let source = map.getSource('items')
       if (source) {
-        // console.log('watch', data)
         let geojson = {
           'type': 'FeatureCollection',
           'features': []
         }
-        Object.keys(data).forEach(function (key) {
+        Object.keys(data).forEach(key => {
           const post = data[key]
+          if (this.$route.query && this.$route.query.id && this.$route.query.id === key) {
+            map.easeTo({ center: [post.lng, post.lat], zoom: 18 })
+          }
           geojson.features.push({
             'type': 'Feature',
             'properties': {
@@ -89,7 +90,6 @@ export default {
     }
   },
   mounted () {
-    // console.log('mounted', this.post)
     const mapboxgl = require('mapbox-gl/dist/mapbox-gl')
     const minimap = require('~/plugins/minimap')
     mapboxgl.accessToken = 'pk.eyJ1IjoicnVuZXR2aWx1bSIsImEiOiJkeUg2WVkwIn0.yoMmv3etOc40RXkPsebXSg'
@@ -107,7 +107,6 @@ export default {
         return
       }
       var feature = features[0]
-      console.log(feature)
       this.$store.commit('popup', feature)
       this.show = true
 
@@ -125,20 +124,21 @@ export default {
       map.getCanvas().style.cursor = (features.length) ? 'pointer' : ''
     })
     map.on('styledata', function (e) {
-      // console.log('styledata')
       setTimeout(function () {
         map.resize()
       }, 500)
       const source = map.getSource('items')
-      // console.log('source', source)
       if (!source) {
         let geojson = {
           'type': 'FeatureCollection',
           'features': []
         }
         const geofire = this.geofire
-        Object.keys(geofire).forEach(function (key) {
+        Object.keys(geofire).forEach(key => {
           const post = geofire[key]
+          if (this.$route.query && this.$route.query.id && this.$route.query.id === key) {
+            map.easeTo({ center: [post.lng, post.lat], zoom: 18 })
+          }
           geojson.features.push({
             'type': 'Feature',
             'properties': {

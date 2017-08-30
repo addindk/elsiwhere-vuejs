@@ -40,7 +40,7 @@
               </div>
             </v-card-text>
             <v-card-actions>
-              <v-btn light icon class="grey--text text--darken-3" @click.stop="$router.push({ name: 'elsiwhere-map-id', params: { id: key }})">
+              <v-btn light icon class="grey--text text--darken-3" @click.stop="$router.push({ name: 'elsiwhere-map', query: { id: key }})">
                 <v-icon>public</v-icon>
               </v-btn>
               <v-menu bottom origin="top right" transition="v-scale-transition">

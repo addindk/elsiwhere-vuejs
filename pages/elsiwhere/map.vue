@@ -15,7 +15,6 @@
       }
     },
     mounted () {
-      console.log('mounted map')
       const store = this.$store
       firebaseapp.database().ref('post').on('child_added', function (data) {
         store.commit('posts', data)
