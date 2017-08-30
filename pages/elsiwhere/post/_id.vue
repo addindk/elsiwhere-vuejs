@@ -18,7 +18,7 @@
         </div>
       </v-card-text>
       <v-card-actions>
-        <v-btn light icon class="grey--text text--darken-3" @click.native.stop="$router.push({ name: 'index-map-id', params: { id: $route.params.id }})">
+        <v-btn light icon class="grey--text text--darken-3" @click.native.stop="$router.push({ name: 'elsiwhere-map', query: { id: $route.params.id }})">
             <v-icon>public</v-icon>
         </v-btn>
         <v-menu bottom origin="top right" transition="v-scale-transition">

@@ -446,7 +446,6 @@ export default {
     },
     showMap: function () {
       this.step = 4
-      console.log('mounted')
       const mapboxgl = require('mapbox-gl/dist/mapbox-gl')
       mapboxgl.accessToken = 'pk.eyJ1IjoicnVuZXR2aWx1bSIsImEiOiJkeUg2WVkwIn0.yoMmv3etOc40RXkPsebXSg'
       const tilejson = {
@@ -496,7 +495,7 @@ export default {
       })
       function success (pos) {
         var crd = pos.coords
-        map.jumpTo({ zoom: 15, center: new mapboxgl.LngLat(crd.longitude, crd.latitude) })
+        map.jumpTo({ zoom: 18, center: new mapboxgl.LngLat(crd.longitude, crd.latitude) })
       }
       window.navigator.geolocation.getCurrentPosition(success)
       /*
